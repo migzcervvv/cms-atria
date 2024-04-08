@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
       default:
         "https://cdn.pixabay.com/photo/2023/05/02/10/35/avatar-7964945_1280.png",
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

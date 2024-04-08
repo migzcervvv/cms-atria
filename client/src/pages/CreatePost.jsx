@@ -33,6 +33,7 @@ export default function CreatePost() {
             Upload Image
           </Button>
         </div>
+        {/*TEXT EDITOR, NEED TO CHANGE IF DOM HAS DEPRECATED*/}
         <ReactQuill
           theme="snow"
           placeholder="Write Something..."

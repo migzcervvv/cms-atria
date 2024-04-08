@@ -47,8 +47,8 @@ export default function SignUp() {
             </span>{" "}
             News
           </Link>
-          <p className="text-sm mt-5">
-            This is a demo project. Sign up with email or google
+          <p className="text-sm mt-5 font-semibold">
+            See the latest news about Atria!
           </p>
         </div>
         {/* right */}

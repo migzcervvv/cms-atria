@@ -7,7 +7,7 @@ export default function CallToAction() {
         <h2 className="text-2xl text-white">
           Transform Your Maritime Career with MyCaDO!
         </h2>
-        <p className="text-white my-2 dark:text-gray-400 text-justify">
+        <p className="text-white my-2 dark:text-gray-300 text-justify">
           Join MyCaDO, the pioneering career development platform
           revolutionizing the maritime industry. Experience hands-on learning,
           personalized support, and transformative opportunities tailored to

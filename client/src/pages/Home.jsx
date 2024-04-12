@@ -21,7 +21,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold lg:text-6xl ">
           Welcome to Atria News
         </h1>
-        <p className="text-gray-700 text-sm sm:text-md dark:text-gray-400">
+        <p className="text-gray-700 text-sm sm:text-md dark:text-gray-300">
           At Atria, we're more than just a learning and development hub for
           maritime professionals. We're dedicated to fostering holistic growth,
           nurturing individuals with a blend of hands-on experience,
@@ -36,7 +36,7 @@ export default function Home() {
           View all posts
         </Link>
       </div>
-      <div className="p-3 bg-blue-950 dark:bg-slate-700 ">
+      <div className="p-3 bg-blue-950 dark:bg-slate-800 ">
         <CallToAction />
       </div>
       <div className="max-w-8xl mx-auto p-3 flex flex-col gap-8 py-7">

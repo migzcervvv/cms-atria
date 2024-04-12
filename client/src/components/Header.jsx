@@ -114,8 +114,14 @@ export default function Header() {
         <Navbar.Link active={path === "/"} as={"div"}>
           <Link to="/">Home</Link>
         </Navbar.Link>
-        <Navbar.Link active={path === "/about"} as={"div"}>
-          <Link to="/about">About</Link>
+        <Navbar.Link as={"div"}>
+          <Link
+            to="https://atria-learning.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Atria Learning
+          </Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/projects"} as={"div"}>
           <Link to="/projects">Projects</Link>

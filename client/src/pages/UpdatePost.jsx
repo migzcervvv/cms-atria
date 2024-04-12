@@ -82,8 +82,13 @@ export default function UpdatePost() {
       console.log(error);
     }
   };
+  console.log(formData._id, currentUser._id);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData._id) {
+      setPublishError("You are not allowed to edit this post!");
+      return;
+    }
     try {
       const res = await fetch(
         `/api/post/updatepost/${formData._id}/${currentUser._id}`,

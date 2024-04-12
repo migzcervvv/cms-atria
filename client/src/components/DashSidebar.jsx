@@ -1,8 +1,9 @@
-import { Sidebar } from "flowbite-react";
+import { Button, Sidebar } from "flowbite-react";
 import {
   HiArrowSmRight,
   HiDocumentText,
   HiOutlineUserGroup,
+  HiPlus,
   HiUser,
 } from "react-icons/hi";
 import { useEffect, useState } from "react";
@@ -71,6 +72,17 @@ export default function DashSidebar() {
                 as="div"
               >
                 Users
+              </Sidebar.Item>
+            </Link>
+          )}
+          {currentUser.isAdmin && (
+            <Link to={"/create-post"}>
+              <Sidebar.Item
+                active={tab === "createPost"}
+                icon={HiPlus}
+                as="div"
+              >
+                Create Post
               </Sidebar.Item>
             </Link>
           )}

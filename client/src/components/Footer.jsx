@@ -18,10 +18,7 @@ export default function FooterComponent() {
               to="/"
               className="self-center whitespace-nowrap text-lg sm:text-xl font-semibold dark:text-white"
             >
-              <span className="px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg text-white">
-                Atria
-              </span>{" "}
-              News
+              <img src="/atria-logo.png" className="px-2 py-1 max-w-2xl" />
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-8 mt-4 sm:grid-cols-3 sm:gap-6">
@@ -71,7 +68,10 @@ export default function FooterComponent() {
             <Footer.Icon href="#" icon={BsInstagram} />
             <Footer.Icon href="#" icon={BsTwitter} />
             <Footer.Icon href="#" icon={BsGithub} />
-            <Footer.Icon href="#" icon={BsLinkedin} />
+            <Footer.Icon
+              href="https://www.linkedin.com/company/atria-learning-&-development-gmbh/"
+              icon={BsLinkedin}
+            />
           </div>
         </div>
       </div>

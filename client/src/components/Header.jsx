@@ -52,12 +52,11 @@ export default function Header() {
     <Navbar className="border-b-2">
       <Link
         to="/"
-        className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"
+        className="self-center whitespace-nowrap font-semibold dark:text-white"
       >
-        <span className="px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg text-white">
-          Atria
-        </span>{" "}
-        News
+        <div className="px-2 py-1">
+          <img src="/atria-logo.png" alt="Atria Logo" className="max-h-16" />
+        </div>
       </Link>
       <form onSubmit={handleSubmit}>
         <TextInput
@@ -124,7 +123,7 @@ export default function Header() {
           </Link>
         </Navbar.Link>
         <Navbar.Link active={path === "/projects"} as={"div"}>
-          <Link to="/projects">Projects</Link>
+          <Link to="/projects">MyCaDO</Link>
         </Navbar.Link>
       </Navbar.Collapse>
     </Navbar>

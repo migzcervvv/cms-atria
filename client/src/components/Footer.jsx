@@ -30,7 +30,7 @@ export default function FooterComponent() {
                 >
                   Atria Learning
                 </Footer.Link>
-                <Footer.Link href="/projects">Projects</Footer.Link>
+                <Footer.Link href="/projects">MyCaDO</Footer.Link>
               </Footer.LinkGroup>
             </div>
             <div>

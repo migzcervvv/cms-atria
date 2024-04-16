@@ -40,11 +40,11 @@ export const signin = async (req, res, next) => {
   try {
     const validUser = await User.findOne({ email });
     if (!validUser) {
-      next(errorHandler(404, "User not found"));
+      next(errorHandler(404, "Login is for Admin Only"));
     }
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     if (!validPassword) {
-      return next(errorHandler(400, "Invalid Passsword"));
+      return next(errorHandler(400, "Wrong password! Please try again"));
     }
     const token = jwt.sign(
       {

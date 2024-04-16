@@ -82,7 +82,7 @@ export default function UpdatePost() {
       console.log(error);
     }
   };
-  console.log(formData._id, currentUser._id);
+  console.log(formData.userId, currentUser._id);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData._id) {
@@ -113,6 +113,7 @@ export default function UpdatePost() {
       setPublishError("Something went wrong.");
     }
   };
+
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
       <h1 className="text-center text-3xl my-7 font-semibold">Update a post</h1>
@@ -136,11 +137,12 @@ export default function UpdatePost() {
             value={formData.category}
           >
             <option value="uncategorized">Select a category</option>
-            <option value="javascript">Javascript</option>
-            <option value="reactjs">Reactjs</option>
-            <option value="next.js">Next.js</option>
+            <option value="Seafarers">Seafarers</option>
+            <option value="Atria">Atria</option>
+            <option value="Avior">Avior</option>
           </Select>
         </div>
+
         <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
           <FileInput
             type="file"
@@ -175,7 +177,7 @@ export default function UpdatePost() {
             className="w-full h-72 object-cover"
           />
         )}
-        {/*TEXT EDITOR, NEED TO CHANGE IF DOM HAS DEPRECATED*/}
+        {/*TEXT EDITOR, NEED TO CHANGE REACT QUILL TEXT EDITOR IF DOM HAS DEPRECATED*/}
         <ReactQuill
           theme="snow"
           value={formData.content}

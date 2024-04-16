@@ -102,9 +102,9 @@ export default function CreatePost() {
             }
           >
             <option value="uncategorized">Select a category</option>
-            <option value="javascript">Javascript</option>
-            <option value="reactjs">Reactjs</option>
-            <option value="next.js">Next.js</option>
+            <option value="Seafarers">Seafarers</option>
+            <option value="Atria">Atria</option>
+            <option value="Avior">Avior</option>
           </Select>
         </div>
         <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
@@ -112,6 +112,7 @@ export default function CreatePost() {
             type="file"
             accept="image/*"
             onChange={(e) => setFile(e.target.files[0])}
+            required
           />
           <Button
             type="button"

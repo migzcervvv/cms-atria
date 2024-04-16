@@ -37,7 +37,11 @@ export default function FooterComponent() {
               {" "}
               <Footer.Title title="Follow us" />
               <Footer.LinkGroup col>
-                <Footer.Link href="https://www.linkedin.com/company/atria-learning-&-development-gmbh/">
+                <Footer.Link
+                  href="https://www.linkedin.com/company/atria-learning-&-development-gmbh/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   LinkedIn
                 </Footer.Link>
               </Footer.LinkGroup>
@@ -47,14 +51,16 @@ export default function FooterComponent() {
               <Footer.Title title="Legal" />
               <Footer.LinkGroup col>
                 <Footer.Link
-                  href="https://atria-learning.com/pdf/Service%20Agreement%20Atria.pdf"
+                  as={Link}
+                  to="/pdfview/Service-Agreement-Atria.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Service Agreement
                 </Footer.Link>
                 <Footer.Link
-                  href="https://atria-learning.com/pdf/Privacy%20Statement%20Atria.pdf"
+                  as={Link}
+                  to="/pdfview/Privacy-Statement-Atria.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -67,7 +73,9 @@ export default function FooterComponent() {
         <Footer.Divider />
         <div className="w-full sm:flex sm:items-center sm:justify-between">
           <Footer.Copyright
-            href="#"
+            href="https://atria-learning.com/"
+            target="_blank"
+            rel="noopener noreferrer"
             by="Atria Learning and Development GMBH"
             year={new Date().getFullYear()}
           />
@@ -80,6 +88,8 @@ export default function FooterComponent() {
             />
             <Footer.Icon
               href="https://www.linkedin.com/company/atria-learning-&-development-gmbh/"
+              target="_blank"
+              rel="noopener noreferrer"
               icon={BsLinkedin}
             />
           </div>

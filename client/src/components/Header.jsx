@@ -101,7 +101,7 @@ export default function Header() {
             <Dropdown.Item onClick={handleSignout}>Sign Out</Dropdown.Item>
           </Dropdown>
         ) : (
-          <Link to="/sign-in">
+          <Link to="/">
             <Button gradientDuoTone="purpleToBlue" outline>
               Admin
             </Button>
@@ -121,9 +121,6 @@ export default function Header() {
           >
             Atria Learning
           </Link>
-        </Navbar.Link>
-        <Navbar.Link active={path === "/projects"} as={"div"}>
-          <Link to="/projects">MyCaDO</Link>
         </Navbar.Link>
       </Navbar.Collapse>
     </Navbar>

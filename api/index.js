@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.route.js";
 import postRoutes from "./routes/post.route.js";
 import cookieParser from "cookie-parser";
 import path from "path";
+import cors from "cors"; // Import the cors package
 
 dotenv.config();
 
@@ -24,6 +25,14 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
+// Add CORS middleware
+app.use(
+  cors({
+    origin: "*", // Adjust this to your frontend URL
+    optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  })
+);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000!");

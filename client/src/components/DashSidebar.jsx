@@ -7,6 +7,7 @@ import {
   HiPlus,
   HiUser,
 } from "react-icons/hi";
+import { TbCategoryPlus } from "react-icons/tb";
 import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { signoutSuccess } from "../redux/user/userSlice";
@@ -84,6 +85,17 @@ export default function DashSidebar() {
                 as="div"
               >
                 Create Post
+              </Sidebar.Item>
+            </Link>
+          )}
+          {currentUser.isAdmin && (
+            <Link to={"/dashboard?tab=category"}>
+              <Sidebar.Item
+                active={tab === "category"}
+                icon={TbCategoryPlus}
+                as="div"
+              >
+                Create Category
               </Sidebar.Item>
             </Link>
           )}

@@ -14,10 +14,21 @@ export const createCategory = async (req, res) => {
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
-    res.json(categories);
+    const categoryId = req.query.id;
+    if (categoryId) {
+      // If ID is provided, fetch a single category by ID
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      return res.json(category);
+    } else {
+      // If ID is not provided, fetch all categories
+      const categories = await Category.find();
+      return res.json(categories);
+    }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

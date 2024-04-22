@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import CategoryForm from "../components/CategoryForm";
+import { useState, useEffect } from "react";
 import CategoryEdit from "../components/CategoryEdit";
 
 function CategoryPage() {
+  const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
-  const [editCategory, setEditCategory] = useState(false);
+  const [editCategoryId, setEditCategoryId] = useState(null); // Store the ID of the category being edited
 
   useEffect(() => {
     fetchCategories();
@@ -29,14 +29,30 @@ function CategoryPage() {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/categories/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ category }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to create category");
+      }
+      fetchCategories();
+      setCategory("");
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
+  };
+
   const handleEdit = async (id) => {
     try {
-      // Fetch the category data for the given ID
-      const response = await fetch(`/api/categories/get/${id}`);
-      const categoryData = await response.json();
-
-      // Set editCategory to the fetched category data
-      setEditCategory(categoryData);
+      // Set the ID of the category being edited
+      setEditCategoryId(id);
     } catch (error) {
       console.error("Error fetching category:", error);
     }
@@ -49,15 +65,29 @@ function CategoryPage() {
   return (
     <div className="flex flex-row items-start justify-center min-h-screen w-full">
       <div className="flex flex-col">
-        <h1 className="text-2xl font-bold mb-4">Categories</h1>
-        {/* Render CategoryForm or CategoryEdit based on editCategory state */}
-        {editCategory ? (
+        <h1 className="text-2xl font-bold my-4">Categories</h1>
+        {/* Render CategoryForm or CategoryEdit based on editCategoryId state */}
+        {editCategoryId !== null ? ( // Check if an ID is set for editing
           <CategoryEdit
+            catId={editCategoryId} // Pass the ID of the category being edited
             fetchCategories={fetchCategories}
-            category={editCategory}
           />
         ) : (
-          <CategoryForm fetchCategories={fetchCategories} />
+          <form onSubmit={handleSubmit} className="mb-4">
+            <input
+              type="text"
+              placeholder="Enter category name"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="border border-gray-800 px-4 py-2 mr-2"
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Create Category
+            </button>
+          </form>
         )}
         <table
           className="w-full table-auto border-collapse border border-gray-800"
@@ -86,7 +116,7 @@ function CategoryPage() {
                   </button>
                   <button
                     className="bg-amber-300 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded mr-2"
-                    onClick={() => handleEdit(category)}
+                    onClick={() => handleEdit(category._id)}
                   >
                     Edit
                   </button>

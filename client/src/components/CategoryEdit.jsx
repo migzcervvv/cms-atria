@@ -1,32 +1,37 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
-function CategoryEdit({ fetchCategories, editCategory }) {
+function CategoryEdit({ fetchCategories, catId }) {
   const [categoryName, setCategoryName] = useState("");
 
   useEffect(() => {
-    if (editCategory) {
-      setCategoryName(editCategory.category);
-    }
-  }, [editCategory]);
+    const fetchCategory = async () => {
+      try {
+        const response = await fetch(`/api/categories/get?id=${catId}`);
+        const data = await response.json();
+        setCategoryName(data.category);
+      } catch (error) {
+        console.error("Error fetching category:", error);
+      }
+    };
+
+    fetchCategory();
+  }, [catId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editCategory) {
-        // Perform update operation if editCategory is defined
-        await fetch(`/api/categories/update/${editCategory._id}`, {
-          method: "PUT", // Specify the method as PUT for update
-          headers: {
-            "Content-Type": "application/json", // Specify the content type
-          },
-          body: JSON.stringify({ category: categoryName }), // Convert the body to JSON
-        });
-        console.log(editCategory._id);
-        fetchCategories();
-        setCategoryName("");
-      } else {
-        console.log("Error updating this category"); // Fixed the error message here
+      const response = await fetch(`/api/categories/update/${catId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ category: categoryName }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update category");
       }
+      fetchCategories(); // Assuming fetchCategories is defined and accessible
+      setCategoryName("");
     } catch (error) {
       console.error("Error updating category:", error);
     }
@@ -37,7 +42,7 @@ function CategoryEdit({ fetchCategories, editCategory }) {
       <input
         type="text"
         placeholder="Enter category name"
-        value={categoryName}
+        value={categoryName} // Set the value attribute to categoryName
         onChange={(e) => setCategoryName(e.target.value)}
         className="border border-gray-800 px-4 py-2 mr-2"
       />

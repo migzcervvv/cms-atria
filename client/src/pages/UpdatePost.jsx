@@ -27,15 +27,37 @@ export default function UpdatePost() {
   const [imageUploadError, setImageUploadError] = useState(null);
   const [formData, setFormData] = useState(null);
   const [publishError, setPublishError] = useState(null);
+  const [categories, setCategories] = useState([]);
+
   const { postId } = useParams();
 
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories/get");
+        const data = await res.json();
+        if (res.ok) {
+          setCategories(data);
+          console.log("Categories:", data); // Log categories
+        } else {
+          console.error("Failed to fetch categories");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     try {
       const fetchPost = async () => {
-        const res = await fetch(`/api/post/getposts?postId=${postId}`);
+        const res = await fetch(
+          `/api/post/getposts?postId=${postId}&populateCategory=true`
+        );
         const data = await res.json();
         if (!res.ok) {
           console.log(data.message);
@@ -44,14 +66,18 @@ export default function UpdatePost() {
         }
         if (res.ok) {
           setPublishError(null);
-          setFormData(data.posts[0]);
+          const postData = data.posts[0];
+          setFormData({
+            ...postData,
+            category: postData.category.category, // Store category name instead of category ID
+          });
         }
       };
       fetchPost();
     } catch (error) {
       console.log(error.message);
     }
-  }, [postId]);
+  }, [postId, categories]); // Make sure to include categories in the dependency array
 
   const handleUploadImage = async () => {
     try {
@@ -89,6 +115,7 @@ export default function UpdatePost() {
       console.log(error);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title) {
@@ -138,18 +165,26 @@ export default function UpdatePost() {
               value={formData.title || ""}
             />
             <Select
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              value={formData.category || "uncategorized"}
+              value={formData.category || ""}
+              onChange={(e) => {
+                const selectedCategoryId = e.target.value;
+                const selectedCategory = categories.find(
+                  (category) => category._id === selectedCategoryId
+                );
+                setFormData({
+                  ...formData,
+                  category: selectedCategoryId, // Ensure category value is preserved
+                });
+              }}
             >
-              <option value="uncategorized">Select a category</option>
-              <option value="Seafarers">Seafarers</option>
-              <option value="Atria">Atria</option>
-              <option value="Avior">Avior</option>
+              <option value="">Select a category</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.category}
+                </option>
+              ))}
             </Select>
           </div>
-
           <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
             <FileInput
               type="file"

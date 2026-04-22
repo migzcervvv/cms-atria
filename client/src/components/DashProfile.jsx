@@ -1,13 +1,6 @@
 import { Alert, Button, Modal, TextInput } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { app } from "../firebase";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
@@ -21,6 +14,7 @@ import {
 } from "../redux/user/userSlice";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { Link } from "react-router-dom";
+import { uploadFileToR2 } from "../utils/uploadFileToR2";
 
 export default function DashProfile() {
   const { currentUser, error, loading } = useSelector((state) => state.user);
@@ -65,32 +59,23 @@ export default function DashProfile() {
     }
     setImageFileUploading(true);
     setimageFileUploadError(null);
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + imageFile.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, imageFile);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setimageFileUploadProgress(progress.toFixed(0));
-      },
-      (error) => {
-        setimageFileUploadError("Could not upload the image.");
-        setimageFileUploadProgress(null);
-        setImageFile(null);
-        setImageFileUrl(null);
-        setImageFileUploading(false);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setImageFileUrl(downloadURL);
-          setFormData({ ...formData, profilePicture: downloadURL });
-          setImageFileUploading(false);
-        });
-      }
-    );
+    try {
+      const publicUrl = await uploadFileToR2({
+        file: imageFile,
+        folder: "profiles",
+        onProgress: setimageFileUploadProgress,
+      });
+      setImageFileUrl(publicUrl);
+      setFormData({ ...formData, profilePicture: publicUrl });
+      setimageFileUploadProgress(null);
+      setImageFileUploading(false);
+    } catch (error) {
+      setimageFileUploadError(error.message || "Could not upload the image.");
+      setimageFileUploadProgress(null);
+      setImageFile(null);
+      setImageFileUrl(null);
+      setImageFileUploading(false);
+    }
   };
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });

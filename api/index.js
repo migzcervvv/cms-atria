@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
 import postRoutes from "./routes/post.route.js";
+import uploadRoutes from "./routes/upload.route.js";
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors"; // Import the cors package
@@ -41,6 +42,7 @@ app.listen(3000, () => {
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/post", postRoutes);
+app.use("/api/upload", uploadRoutes);
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 

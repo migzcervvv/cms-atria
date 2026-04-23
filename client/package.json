@@ -13,7 +13,7 @@
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@reduxjs/toolkit": "^2.2.3",
-    "firebase": "^10.10.0",
+    "cms-atria": "file:..",
     "flowbite-react": "^0.7.8",
     "react": "^18.2.0",
     "react-circular-progressbar": "^2.1.0",

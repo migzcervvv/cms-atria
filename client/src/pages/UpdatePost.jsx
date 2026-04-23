@@ -2,24 +2,17 @@ import {
   Alert,
   Button,
   FileInput,
-  Label,
   Select,
   TextInput,
 } from "flowbite-react";
 import { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { uploadFileToR2 } from "../utils/uploadFileToR2";
 
 export default function UpdatePost() {
   const [file, setFile] = useState(null);
@@ -86,33 +79,17 @@ export default function UpdatePost() {
         return;
       }
       setImageUploadError(null);
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + "-" + file.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setImageUploadProgress(progress.toFixed(0));
-        },
-        (error) => {
-          setImageUploadError("Image upload failed");
-          setImageUploadProgress(null);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            setImageUploadProgress(null);
-            setImageUploadError(null);
-            setFormData({ ...formData, image: downloadURL });
-          });
-        }
-      );
-    } catch (error) {
-      setImageUploadError("Image upload failed");
+      const publicUrl = await uploadFileToR2({
+        file,
+        folder: "posts",
+        onProgress: setImageUploadProgress,
+      });
       setImageUploadProgress(null);
-      console.log(error);
+      setImageUploadError(null);
+      setFormData({ ...formData, image: publicUrl });
+    } catch (error) {
+      setImageUploadError(error.message || "Image upload failed");
+      setImageUploadProgress(null);
     }
   };
 
@@ -189,7 +166,6 @@ export default function UpdatePost() {
             <FileInput
               type="file"
               accept="image/*"
-              value={file !== null ? file : ""}
               onChange={(e) => setFile(e.target.files[0])}
             />
             <Button

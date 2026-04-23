@@ -2,16 +2,10 @@ import { Alert, Button, FileInput, Select, TextInput } from "flowbite-react";
 import { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useNavigate } from "react-router-dom";
+import { uploadFileToR2 } from "../utils/uploadFileToR2";
 
 export default function CreatePost() {
   const [file, setFile] = useState(null);
@@ -48,33 +42,17 @@ export default function CreatePost() {
         return;
       }
       setImageUploadError(null);
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + "-" + file.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setImageUploadProgress(progress.toFixed(0));
-        },
-        (error) => {
-          setImageUploadError("Image upload failed");
-          setImageUploadProgress(null);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            setImageUploadProgress(null);
-            setImageUploadError(null);
-            setFormData({ ...formData, image: downloadURL });
-          });
-        }
-      );
-    } catch (error) {
-      setImageUploadError("Image upload failed");
+      const publicUrl = await uploadFileToR2({
+        file,
+        folder: "posts",
+        onProgress: setImageUploadProgress,
+      });
       setImageUploadProgress(null);
-      console.log(error);
+      setImageUploadError(null);
+      setFormData({ ...formData, image: publicUrl });
+    } catch (error) {
+      setImageUploadError(error.message || "Image upload failed");
+      setImageUploadProgress(null);
     }
   };
   const handleSubmit = async (e) => {

@@ -1,11 +1,12 @@
 import Post from "../models/post.model.js";
+import Category from "../models/category.model.js";
 import { errorHandler } from "../utils/error.js";
 
 export const create = async (req, res, next) => {
   if (!req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to create a post!"));
   }
-  if (!req.body.title || !req.body.content) {
+  if (!req.body.title || !req.body.content || !req.body.category) {
     return next(errorHandler(400, "Please provide all required fields"));
   }
   const slug = req.body.title
@@ -13,12 +14,17 @@ export const create = async (req, res, next) => {
     .join("-")
     .toLowerCase()
     .replace(/[^a-zA-Z0-9-]/g, "");
-  const newPost = new Post({
-    ...req.body,
-    slug,
-    userId: req.user.id,
-  });
   try {
+    const category = await Category.findOne({ category: req.body.category });
+    if (!category) {
+      return next(errorHandler(400, "Category not found"));
+    }
+    const newPost = new Post({
+      ...req.body,
+      category: category.category, // Use category name instead of ID
+      slug,
+      userId: req.user.id,
+    });
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (error) {
@@ -83,14 +89,23 @@ export const updatepost = async (req, res, next) => {
     return next(errorHandler(403, "You are not allowed to update this post"));
   }
   try {
+    const { title, content, category, image } = req.body;
+    console.log("Received category ID:", category); // Log received category ID
+    // Find the category by ID
+    const categoryDocument = await Category.findById(category);
+    if (!categoryDocument) {
+      console.log("Category not found:", category);
+      return next(errorHandler(400, "Category not found"));
+    }
+    // Update the post
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.postId,
       {
         $set: {
-          title: req.body.title,
-          content: req.body.content,
-          category: req.body.category,
-          image: req.body.image,
+          title,
+          content,
+          category: categoryDocument.category, // Use category name
+          image,
         },
       },
       { new: true }

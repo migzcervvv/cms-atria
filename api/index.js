@@ -5,6 +5,7 @@ import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
 import postRoutes from "./routes/post.route.js";
 import uploadRoutes from "./routes/upload.route.js";
+import categoryRoutes from "./routes/category.routes.js";
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors"; // Import the cors package
@@ -30,8 +31,8 @@ app.use(cookieParser());
 // Add CORS middleware
 app.use(
   cors({
-    origin: "*", // Adjust this to your frontend URL
-    optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+    origin: "*",
+    optionsSuccessStatus: 200,
   })
 );
 
@@ -43,6 +44,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/categories", categoryRoutes);
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 

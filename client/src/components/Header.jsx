@@ -15,6 +15,7 @@ export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const { theme } = useSelector((state) => state.theme);
   const [searchTerm, setSearchTerm] = useState("");
+  const homePath = currentUser ? "/dashboard?tab=dash" : "/";
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -51,7 +52,7 @@ export default function Header() {
   return (
     <Navbar className="border-b-2">
       <Link
-        to="/"
+        to={homePath}
         className="self-center whitespace-nowrap font-semibold dark:text-white"
       >
         <div className="px-2 py-1">
@@ -111,7 +112,7 @@ export default function Header() {
       </div>
       <Navbar.Collapse>
         <Navbar.Link active={path === "/"} as={"div"}>
-          <Link to="/">Home</Link>
+          <Link to={homePath}>Home</Link>
         </Navbar.Link>
         <Navbar.Link as={"div"}>
           <Link

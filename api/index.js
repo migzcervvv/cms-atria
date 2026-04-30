@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.route.js";
 import postRoutes from "./routes/post.route.js";
 import uploadRoutes from "./routes/upload.route.js";
 import categoryRoutes from "./routes/category.routes.js";
+import mediaRoutes from "./routes/media.route.js";
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors"; // Import the cors package
@@ -45,6 +46,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/media", mediaRoutes);
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 

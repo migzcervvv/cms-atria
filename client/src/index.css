@@ -36,3 +36,55 @@ body {
 .post-content a:hover {
   text-decoration: underline;
 }
+
+.post-content img,
+.post-content video {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.article-preview-content p {
+  margin-bottom: 2.25rem;
+}
+
+.article-preview-content strong,
+.article-preview-content b {
+  font-weight: 800;
+}
+
+.article-preview-content a {
+  color: #2563eb;
+}
+
+.article-editor-body,
+.article-editor-body .bn-container,
+.article-editor-body .bn-editor,
+.article-editor-body [data-content-type] {
+  color: #0a0a0a;
+}
+
+.youtube-embed {
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #000;
+  aspect-ratio: 16 / 9;
+}
+
+.youtube-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}

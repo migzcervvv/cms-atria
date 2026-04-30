@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import CategoryEdit from "../components/CategoryEdit";
+import {
+  BoneyardPageSkeleton,
+  CategoryTableSkeleton,
+} from "../components/PageSkeletons";
 
 function CategoryPage() {
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [editCategoryId, setEditCategoryId] = useState(null); // Store the ID of the category being edited
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchCategories();
@@ -12,11 +17,14 @@ function CategoryPage() {
 
   const fetchCategories = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch("/api/categories/get");
       const data = await response.json();
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,8 +66,16 @@ function CategoryPage() {
     }
   };
 
-  if (!categories || categories.length === 0) {
-    return <p>No categories found.</p>;
+  if (isLoading) {
+    return (
+      <BoneyardPageSkeleton
+        name="category-table"
+        loading
+        fallback={<CategoryTableSkeleton />}
+      >
+        <CategoryTableSkeleton />
+      </BoneyardPageSkeleton>
+    );
   }
 
   return (
@@ -89,42 +105,48 @@ function CategoryPage() {
             </button>
           </form>
         )}
-        <table
-          className="w-full table-auto border-collapse border border-gray-800"
-          categories={categories}
-        >
-          <thead>
-            <tr>
-              <th className="border border-gray-800 px-4 py-2">
-                Category Name
-              </th>
-              <th className="border border-gray-800 px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr key={category._id}>
-                <td className="border border-gray-800 px-4 py-2">
-                  {category.category}
-                </td>
-                <td className="border border-gray-800 px-4 py-2">
-                  <button
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mr-2"
-                    onClick={() => handleDelete(category._id)}
-                  >
-                    Delete
-                  </button>
-                  <button
-                    className="bg-amber-300 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded mr-2"
-                    onClick={() => handleEdit(category._id)}
-                  >
-                    Edit
-                  </button>
-                </td>
+        {categories.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-neutral-200 px-4 py-8 text-center text-sm text-neutral-500">
+            No categories found.
+          </p>
+        ) : (
+          <table
+            className="w-full table-auto border-collapse border border-gray-800"
+            categories={categories}
+          >
+            <thead>
+              <tr>
+                <th className="border border-gray-800 px-4 py-2">
+                  Category Name
+                </th>
+                <th className="border border-gray-800 px-4 py-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr key={category._id}>
+                  <td className="border border-gray-800 px-4 py-2">
+                    {category.category}
+                  </td>
+                  <td className="border border-gray-800 px-4 py-2">
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mr-2"
+                      onClick={() => handleDelete(category._id)}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="bg-amber-300 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded mr-2"
+                      onClick={() => handleEdit(category._id)}
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

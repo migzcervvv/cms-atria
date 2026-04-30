@@ -1,163 +1,263 @@
-import { Alert, Button, FileInput, Select, TextInput } from "flowbite-react";
-import { useEffect, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import { CircularProgressbar } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-import { useNavigate } from "react-router-dom";
-import { uploadFileToR2 } from "../utils/uploadFileToR2";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import ArticleEditorHeader from "../components/ArticleEditorHeader";
+import ArticlePreviewDrawer from "../components/ArticlePreviewDrawer";
+import BlockNoteTextEditor from "../components/BlockNoteTextEditor";
+import CoverImageEditor from "../components/CoverImageEditor";
+import UnsavedArticleDialog from "../components/UnsavedArticleDialog";
+
+const CREATE_DRAFT_STORAGE_KEY = "atriaCreateArticleDraft";
+
+const hasMeaningfulBody = (content = "") => {
+  if (!content) {
+    return false;
+  }
+
+  const container = document.createElement("div");
+  container.innerHTML = content;
+  const text = container.textContent?.trim() || "";
+  return Boolean(text || container.querySelector("img, video, iframe"));
+};
+
+const readStoredSetup = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem("atriaArticleSetup") || "{}");
+  } catch (error) {
+    return {};
+  }
+};
 
 export default function CreatePost() {
-  const [file, setFile] = useState(null);
-  const [imageUploadProgress, setImageUploadProgress] = useState(null);
-  const [imageUploadError, setImageUploadError] = useState(null);
-  const [formData, setFormData] = useState({});
-  const [publishError, setPublishError] = useState(null);
-  const [categories, setCategories] = useState([]);
-
+  const location = useLocation();
   const navigate = useNavigate();
+  const editorRef = useRef(null);
+  const initialSetup = location.state?.articleSetup || readStoredSetup();
+  const [formData, setFormData] = useState({
+    category: initialSetup.category || "",
+    content: "",
+    contentBlocks: null,
+    image: initialSetup.coverImage || "",
+    title: initialSetup.title || "",
+  });
+  const [editorKey, setEditorKey] = useState(0);
+  const [hasSavedBody, setHasSavedBody] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [lastEditedAt, setLastEditedAt] = useState(new Date().toISOString());
+  const [publishError, setPublishError] = useState(null);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+
+  const saveTemporaryDraft = (nextFormData) => {
+    const savedAt = new Date().toISOString();
+    sessionStorage.setItem(
+      CREATE_DRAFT_STORAGE_KEY,
+      JSON.stringify({
+        ...nextFormData,
+        savedAt,
+      })
+    );
+    setLastEditedAt(savedAt);
+    setHasSavedBody(hasMeaningfulBody(nextFormData.content));
+  };
 
   useEffect(() => {
-    // Fetch categories when component mounts
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/categories/get");
-        const data = await res.json();
-        if (res.ok) {
-          setCategories(data);
-        } else {
-          console.error("Failed to fetch categories");
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
+    const setup = location.state?.articleSetup;
 
-  const handleUploadImage = async () => {
-    try {
-      if (!file) {
-        setImageUploadError("Please select an image");
-        return;
-      }
-      setImageUploadError(null);
-      const publicUrl = await uploadFileToR2({
-        file,
-        folder: "posts",
-        onProgress: setImageUploadProgress,
-      });
-      setImageUploadProgress(null);
-      setImageUploadError(null);
-      setFormData({ ...formData, image: publicUrl });
-    } catch (error) {
-      setImageUploadError(error.message || "Image upload failed");
-      setImageUploadProgress(null);
+    if (!setup) {
+      return;
     }
+
+    setFormData((previousData) => ({
+      ...previousData,
+      category: setup.category || previousData.category,
+      image: setup.coverImage || previousData.image,
+      title: setup.title || previousData.title,
+    }));
+  }, [location.state]);
+
+  useEffect(() => {
+    const previewReturn = location.state?.previewReturn;
+
+    if (!previewReturn) {
+      return;
+    }
+
+    setFormData({
+      category: previewReturn.category || "",
+      content: previewReturn.content || "",
+      contentBlocks: previewReturn.contentBlocks || null,
+      image: previewReturn.image || "",
+      title: previewReturn.title || "",
+    });
+    saveTemporaryDraft(previewReturn);
+    setEditorKey((currentKey) => currentKey + 1);
+    setIsPreviewing(false);
+  }, [location.state]);
+
+  const handleEditorChange = (value, blocks) => {
+    setFormData((previousData) => {
+      const nextFormData = {
+        ...previousData,
+        content: value,
+        contentBlocks: blocks || previousData.contentBlocks || null,
+      };
+      saveTemporaryDraft(nextFormData);
+      return nextFormData;
+    });
   };
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+
+  const handlePreview = async () => {
+    setIsPreviewing(true);
+    const latestSnapshot = await editorRef.current?.getSnapshot?.();
+    const previewSnapshot = {
+      ...formData,
+      content: latestSnapshot?.html || formData.content || "",
+      contentBlocks:
+        latestSnapshot?.blocks || formData.contentBlocks || null,
+    };
+
+    saveTemporaryDraft(previewSnapshot);
+    setFormData(previewSnapshot);
+    setIsPreviewMode(true);
+    setIsPreviewing(false);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!formData.title.trim()) {
+      setPublishError("Add a title before publishing.");
+      return;
+    }
+
+    if (!formData.category) {
+      setPublishError("This article needs a category. Start a new article from the dashboard setup modal.");
+      return;
+    }
+
     try {
+      const { contentBlocks, ...postPayload } = formData;
       const res = await fetch("/api/post/create", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(postPayload),
       });
       const data = await res.json();
+
       if (!res.ok) {
         setPublishError(data.message);
         return;
       }
-      if (res.ok) {
-        setPublishError(null);
-        navigate(`/post/${data.slug}`);
-      }
+
+      sessionStorage.removeItem("atriaArticleSetup");
+      setPublishError(null);
+      sessionStorage.removeItem(CREATE_DRAFT_STORAGE_KEY);
+      navigate(`/post/${data.slug}`);
     } catch (error) {
-      setPublishError("Something went wrong.");
+      setPublishError("Something went wrong while publishing the article.");
     }
   };
+
   return (
-    <div className="p-3 max-w-3xl mx-auto min-h-screen">
-      <h1 className="text-center text-3xl my-7 font-semibold">Create a post</h1>
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-4 sm:flex-row justify-between">
-          <TextInput
-            type="text"
-            placeholder="Title"
-            required
-            id="title"
-            className="flex-1"
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-          />
-          <Select
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category.category}>
-                {category.category}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
-          <FileInput
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files[0])}
-            required
-          />
-          <Button
-            type="button"
-            gradientDuoTone="purpleToBlue"
-            size="sm"
-            outline
-            onClick={handleUploadImage}
-            disabled={imageUploadProgress}
-          >
-            {imageUploadProgress ? (
-              <div className="w-16 h-16">
-                <CircularProgressbar
-                  value={imageUploadProgress}
-                  text={`${imageUploadProgress || 0}%`}
-                />
-              </div>
-            ) : (
-              "Upload Image"
-            )}
-          </Button>
-        </div>
-        {imageUploadError && <Alert color="failure">{imageUploadError}</Alert>}
-        {formData.image && (
-          <img
-            src={formData.image}
-            alt="upload"
-            className="w-full h-72 object-cover"
-          />
-        )}
-        {/*TEXT EDITOR, NEED TO CHANGE IF DOM HAS DEPRECATED*/}
-        <ReactQuill
-          theme="snow"
-          placeholder="Write Something..."
-          className="h-72 mb-12"
-          required
-          onChange={(value) => setFormData({ ...formData, content: value })}
+    <main className="min-h-screen flex-1 bg-white">
+      <form onSubmit={handleSubmit}>
+        <ArticleEditorHeader
+          breadcrumb={`${formData.category || "No category"} / ${
+            formData.title || "Untitled article"
+          }`}
+          isPreviewDisabled={!hasSavedBody}
+          isPreviewing={isPreviewing}
+          lastEditedAt={lastEditedAt}
+          onBack={() => setShowLeaveDialog(true)}
+          onPreview={handlePreview}
+          previewLabel="Preview"
         />
-        <Button type="submit" gradientDuoTone="purpleToBlue">
-          Publish
-        </Button>
-        {publishError && (
-          <Alert className="mt-5" color="failure">
-            {publishError}
-          </Alert>
-        )}
+
+        <section className="px-5 py-10 sm:px-6 lg:py-12">
+          <div className="mx-auto max-w-[740px] bg-white">
+            <input
+              type="text"
+              className="w-full border-0 bg-transparent px-0 text-center text-3xl font-black leading-tight tracking-[-0.03em] text-neutral-950 outline-none placeholder:text-neutral-300 focus:ring-0 sm:text-4xl"
+              placeholder="Untitled article"
+              value={formData.title}
+              onChange={(event) =>
+                setFormData((previousData) => {
+                  const nextFormData = {
+                    ...previousData,
+                    title: event.target.value,
+                  };
+                  saveTemporaryDraft(nextFormData);
+                  return nextFormData;
+                })
+              }
+            />
+
+            {formData.category && (
+              <div className="mt-4 text-center">
+                <span className="inline-flex rounded border border-neutral-500 px-3 py-1 text-xs font-medium text-neutral-600">
+                  {formData.category}
+                </span>
+              </div>
+            )}
+
+            <div className="mt-7">
+              <CoverImageEditor
+                image={formData.image}
+                onChange={(image) =>
+                  setFormData((previousData) => {
+                    const nextFormData = {
+                      ...previousData,
+                      image,
+                    };
+                    saveTemporaryDraft(nextFormData);
+                    return nextFormData;
+                  })
+                }
+              />
+            </div>
+
+            {publishError && (
+              <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {publishError}
+              </div>
+            )}
+
+            <div className="mt-8">
+              <BlockNoteTextEditor
+                key={`create-editor-${editorKey}`}
+                ref={editorRef}
+                initialBlocks={formData.contentBlocks}
+                initialContent={formData.content || ""}
+                onChange={handleEditorChange}
+              />
+            </div>
+          </div>
+        </section>
       </form>
-    </div>
+
+      <ArticlePreviewDrawer
+        show={isPreviewMode}
+        onClose={() => setIsPreviewMode(false)}
+        article={{
+          category: formData.category,
+          content: formData.content,
+          date: lastEditedAt,
+          image: formData.image,
+          title: formData.title,
+        }}
+      />
+
+      <UnsavedArticleDialog
+        show={showLeaveDialog}
+        onCancel={() => setShowLeaveDialog(false)}
+        onConfirm={() => {
+          sessionStorage.removeItem(CREATE_DRAFT_STORAGE_KEY);
+          sessionStorage.removeItem("atriaArticlePreview");
+          navigate("/dashboard?tab=dash");
+        }}
+      />
+    </main>
   );
 }

@@ -14,7 +14,11 @@ import {
 } from "../redux/user/userSlice";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { uploadFileToR2 } from "../utils/uploadFileToR2";
+import {
+  MAX_UPLOAD_SIZE_BYTES,
+  MAX_UPLOAD_SIZE_LABEL,
+  uploadFileToR2,
+} from "../utils/uploadFileToR2";
 
 export default function DashProfile() {
   const { currentUser, error, loading } = useSelector((state) => state.user);
@@ -50,10 +54,9 @@ export default function DashProfile() {
       return; // Stop further execution
     }
 
-    // Check if the file size exceeds 2MB
-    if (imageFile.size > 2 * 1024 * 1024) {
+    if (imageFile.size > MAX_UPLOAD_SIZE_BYTES) {
       setimageFileUploadError(
-        "File size exceeds 2MB. Please upload a smaller file."
+        `Profile image uploads must be ${MAX_UPLOAD_SIZE_LABEL} or smaller.`
       );
       return; // Stop further execution
     }
@@ -196,6 +199,9 @@ export default function DashProfile() {
         {imageFileUploadError && (
           <Alert color="failure">{imageFileUploadError}</Alert>
         )}
+        <p className="-mt-2 text-center text-xs text-gray-500">
+          Upload guideline: profile images must be {MAX_UPLOAD_SIZE_LABEL} or smaller.
+        </p>
         <TextInput
           type="text"
           id="username"
@@ -225,13 +231,13 @@ export default function DashProfile() {
           {loading ? "Loading..." : "Update"}
         </Button>
         {currentUser.isAdmin && (
-          <Link to={"/create-post"}>
+          <Link to={"/dashboard?tab=dash"}>
             <Button
               type="button"
               gradientDuoTone="purpleToBlue"
               className="w-full"
             >
-              Create a post
+              Go to articles
             </Button>
           </Link>
         )}

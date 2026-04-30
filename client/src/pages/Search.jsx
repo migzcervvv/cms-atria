@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { Button, Select, TextInput } from "flowbite-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PostCard from "../components/PostCard";
+import {
+  BoneyardPageSkeleton,
+  SearchResultsSkeleton,
+} from "../components/PageSkeletons";
 
 export default function Search() {
   const [sideBarData, setSideBarData] = useState({
@@ -143,14 +147,20 @@ export default function Search() {
         <h1 className="text-3xl font-semibold sm:border-b border-gray-500 p-3 mt-5">
           Posts results:
         </h1>
-        <div className="p-7 flex flex-wrap gap-4">
-          {!loading && posts.length === 0 && (
-            <p className="text-xl text-gray-500">No posts found.</p>
-          )}
-          {loading && <p className="text-xl text-gray-500">Loading...</p>}
-          {!loading &&
-            posts &&
-            posts.map((post) => <PostCard key={post._id} post={post} />)}
+        <div className="p-7">
+          <BoneyardPageSkeleton
+            name="search-results"
+            loading={loading}
+            fallback={<SearchResultsSkeleton />}
+          >
+            <div className="flex flex-wrap gap-4">
+              {posts.length === 0 && (
+                <p className="text-xl text-gray-500">No posts found.</p>
+              )}
+              {posts &&
+                posts.map((post) => <PostCard key={post._id} post={post} />)}
+            </div>
+          </BoneyardPageSkeleton>
           {showMore && (
             <button
               onClick={handleShowMore}
